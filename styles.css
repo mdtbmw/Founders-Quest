@@ -1,0 +1,925 @@
+/* Founder's Quest™ - styles.css */
+/* Version: 3.0.0 (Branding Update & TekerBot Chat Styles) */
+
+/* --- Global Styles & Variables --- */
+:root {
+    --font-primary: 'Inter', sans-serif;
+    --font-title: 'Orbitron', sans-serif;
+
+    /* HeyTek Limited Palette - Dark Blue, Gold Yellow, White, Black */
+    --color-heytek-dark-blue: #001023; /* Primary Background */
+    --color-heytek-gold: #FFC107;     /* Primary Accent */
+    --color-heytek-white: #FFFFFF;    /* Text & Highlights */
+    --color-heytek-black: #000000;    /* Deep Accents / Contrast */
+    
+    --color-heytek-blue-darkest: #000711; /* For darker shades if needed */
+    --color-heytek-blue-mid: #00224D;    /* Supporting blue */
+    --color-heytek-blue-light: #dbe9ff;  /* Lighter blue for UI elements */
+    --color-heytek-blue-accent: #60a5fa; /* A more vibrant blue for accents */
+    --color-heytek-blue-glass: rgba(0, 34, 77, 0.1); /* Glass effect with mid blue */
+    --color-heytek-cyan-glow: #00f2ff;
+    --color-heytek-cyan-text: #22d3ee; 
+
+    --color-heytek-gold-hover: #FFAB00;
+    --color-heytek-gold-text: #e6ac00; 
+    --color-heytek-gold-glow: rgba(255, 193, 7, 0.6);
+    --color-heytek-orange-accent: #FB923C; 
+
+    --color-text-light: var(--color-heytek-white); 
+    --color-text-dark: var(--color-heytek-black); 
+    --color-text-secondary: #a0aec0; 
+    --color-text-placeholder: #718096; 
+
+    --color-background-main: var(--color-heytek-dark-blue);
+    --color-background-ui-wrapper: rgba(8, 14, 26, 0.92); /* More opaque for better readability */
+    --color-background-card: rgba(0, 16, 35, 0.96); /* Darker card background */
+    --color-background-interactive: rgba(0, 22, 45, 0.9); 
+    --color-background-modal-overlay: rgba(0, 2, 5, 0.88); 
+
+    --color-success: #22c55e; 
+    --color-warning: #f59e0b; 
+    --color-danger: #ef4444; 
+    --color-info: #3b82f6; 
+    --color-purple-consultant: #a855f7; 
+    --color-purple-consultant-hover: #9333ea; 
+    --color-purple-text-light: #d8b4fe; 
+
+    --shadow-xs: 0 1px 2px 0 rgba(0,0,0,0.12);
+    --shadow-sm: 0 2px 4px -1px rgba(0,0,0,0.15), 0 1px 2px -1px rgba(0,0,0,0.12);
+    --shadow-md: 0 4px 8px -2px rgba(0,0,0,0.18), 0 2px 4px -2px rgba(0,0,0,0.15);
+    --shadow-lg: 0 10px 20px -3px rgba(0,0,0,0.22), 0 4px 8px -4px rgba(0,0,0,0.2);
+    --shadow-xl: 0 20px 30px -5px rgba(0,0,0,0.35), 0 8px 15px -6px rgba(0,0,0,0.3);
+    --shadow-inset: inset 0 2px 4px 0 rgba(0,0,0,0.2);
+    --shadow-inset-strong: inset 0 3px 6px 0 rgba(0,0,0,0.3);
+
+    --shadow-glow-gold: 0 0 20px var(--color-heytek-gold-glow);
+    --shadow-glow-cyan: 0 0 20px rgba(0, 229, 255, 0.4);
+    --shadow-glow-blue: 0 0 25px rgba(96, 165, 250, 0.3);
+
+    --border-radius-main: 0.75rem; 
+    --border-radius-md: 0.5rem; 
+    --border-radius-sm: 0.375rem; 
+    --border-radius-lg: 1rem; /* For chat bubbles */
+
+
+    --transition-main: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-fast: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+body {
+    font-family: var(--font-primary);
+    margin: 0;
+    line-height: 1.65; 
+    background-color: var(--color-background-main);
+    color: var(--color-text-light);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden; 
+}
+.no-animations *, .no-animations *::before, .no-animations *::after {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* --- Game World & UI Wrapper --- */
+#gameUIWrapper {
+    background-color: var(--color-background-ui-wrapper);
+    border: 1px solid rgba(255, 193, 7, 0.3); /* Gold border accent */
+    box-shadow: var(--shadow-glow-gold), var(--shadow-xl);
+    backdrop-filter: blur(18px) saturate(140%); 
+    transition: opacity var(--transition-slow) ease-out;
+}
+.opacity-0 { opacity: 0; } .opacity-100 { opacity: 1; }
+
+
+/* --- Header --- */
+#gameHeader {
+    background-color: rgba(0,0,0,0.7); 
+    border-bottom: 1px solid rgba(255, 193, 7, 0.4); /* Gold border accent */
+    padding: 0.75rem 1.25rem; 
+}
+#gameHeader h1 { font-family: var(--font-title); letter-spacing: -0.02em; color: var(--color-heytek-gold); }
+#headerCompanyName {
+    font-family: var(--font-primary); font-weight: 500; 
+    letter-spacing: 0.05em; color: var(--color-heytek-cyan-text); 
+    opacity: 0.9; margin-top: -0.05rem; 
+}
+#liveDashboard .dashboard-item {
+    display: flex; align-items: center;
+    background-color: rgba(255, 255, 255, 0.05); /* Softer white */
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--border-radius-md);
+    padding: 0.35rem 0.7rem; gap: 0.4rem; 
+    color: var(--color-text-secondary); box-shadow: var(--shadow-xs); 
+    transition: var(--transition-main);
+}
+#liveDashboard .dashboard-item:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-color: var(--color-heytek-gold); transform: translateY(-1px) scale(1.02); 
+    box-shadow: var(--shadow-sm), 0 0 10px var(--color-heytek-gold-glow);
+}
+#liveDashboard .dashboard-item .icon { width: 1em; height: 1em; opacity: 0.8; color: var(--color-heytek-blue-light); }
+#liveDashboard .dashboard-item .label { color: var(--color-heytek-blue-accent); font-weight: 500; font-size: 0.9em; }
+#liveDashboard .dashboard-item .value { font-weight: 600; color: var(--color-text-light); font-size: 0.9em; }
+#liveDashboard .currency-display .value { color: var(--color-heytek-gold); text-shadow: 0 0 10px var(--color-heytek-gold-glow), 0 0 5px var(--color-heytek-gold); }
+
+.quick-controls .control-button {
+    background-color: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--color-text-light); opacity: 0.85;
+    padding: 0.6rem; border-radius: var(--border-radius-md);
+    transition: var(--transition-main);
+}
+.quick-controls .control-button:hover {
+    background-color: rgba(255,255,255,0.15); opacity: 1;
+    border-color: var(--color-heytek-gold); color: var(--color-heytek-gold);
+    transform: scale(1.05);
+}
+.quick-controls .control-button .icon { width: 1.25em; height: 1.25em; fill: currentColor; }
+
+
+/* --- Main Game Area & Scrollbar --- */
+#mainGameArea { padding: 1.25rem; } 
+.custom-scrollbar::-webkit-scrollbar { width: 10px; height: 10px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: rgba(0,0,0,0.3); border-radius: 8px; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background-color: var(--color-heytek-gold); border-radius: 8px; border: 2px solid transparent; background-clip: content-box;}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover { background-color: var(--color-heytek-gold-hover); }
+
+
+/* --- Modals (General and Specific) --- */
+.modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    display: flex; align-items: center; justify-content: center;
+    background-color: var(--color-background-modal-overlay);
+    backdrop-filter: blur(12px) saturate(120%); 
+    z-index: 10000; 
+    transition: opacity 0.3s ease-out, visibility 0.3s;
+    opacity: 0; visibility: hidden;
+    padding: 1rem; 
+}
+.modal:not(.hidden) { opacity: 1; visibility: visible; }
+
+.modal-content.glassmorphic-panel {
+    background-color: rgba(0, 10, 25, 0.97); /* Darker, more solid panel */
+    border: 1px solid rgba(255, 193, 7, 0.4); /* Gold accent */
+    box-shadow: var(--shadow-xl), 0 0 60px rgba(255, 193, 7, 0.2); /* Gold glow */
+    border-radius: var(--border-radius-main);
+    border-top: 5px solid var(--color-heytek-gold); 
+    padding: 0; 
+    max-height: 90vh;
+    width: 100%; 
+    display: flex; flex-direction: column;
+    opacity: 0; transform: translateY(20px) scale(0.98);
+    transition: opacity 0.3s var(--transition-main), transform 0.3s var(--transition-main);
+    overflow: hidden; 
+}
+
+.modal:not(.hidden) .modal-content.glassmorphic-panel {
+    opacity: 1; transform: translateY(0) scale(1);
+}
+
+.modal-header {
+    padding: 1.25rem 1.75rem; 
+    border-bottom: 1px solid rgba(255, 193, 7, 0.25); /* Softer gold border */
+    flex-shrink: 0; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+}
+.modal-header h2 { font-family: var(--font-title); margin-bottom: 0; font-size: 1.75rem; letter-spacing: -0.01em; }
+.modal-close-btn {
+    font-size: 2rem; color: var(--color-text-secondary);
+    line-height: 0.8; transition: var(--transition-main);
+    background: none; border: none; cursor: pointer;
+    padding: 0.4rem; 
+}
+.modal-close-btn:hover { color: var(--color-text-light); transform: rotate(90deg) scale(1.1); } 
+
+.modal-body-content {
+    padding: 1.25rem 1.75rem;
+    overflow-y: auto; 
+    flex-grow: 1; 
+}
+
+.modal-footer { 
+    padding: 1.25rem 1.75rem;
+    border-top: 1px solid rgba(255, 193, 7, 0.2); /* Gold accent */
+    flex-shrink: 0; 
+    display: flex;
+    justify-content: flex-end; 
+    gap: 0.75rem; 
+}
+#settingsModal .modal-footer { justify-content: space-between; } 
+
+
+/* Confirmation Modal Specifics */
+#confirmationModal .modal-header h2 { color: var(--color-warning); }
+#confirmationModalMessage { font-size: 1.05rem; line-height: 1.6; }
+
+
+/* --- AI Mentor Panel --- */
+#aiMentorBo { /* Renamed to TekerBot in JS, but HTML ID is aiMentorBo */
+    background-color: rgba(0, 20, 40, 0.97); 
+    border-color: var(--color-heytek-cyan-text); 
+    box-shadow: 0 0 30px rgba(0, 229, 255, 0.3), var(--shadow-lg);
+    z-index: 1005; 
+    border-radius: var(--border-radius-md); 
+    padding: 1.25rem;
+    transition: opacity 0.4s ease-out, transform 0.4s ease-out;
+}
+@keyframes pulse-glow {
+    0%, 100% { filter: drop-shadow(0 0 3px var(--color-heytek-cyan-glow)); opacity: 0.8; }
+    50% { filter: drop-shadow(0 0 10px var(--color-heytek-cyan-glow)); opacity: 1; }
+}
+#aiMentorBo h3 .icon { animation: pulse-glow 2s infinite ease-in-out; }
+#closeMentorButton { font-size: 1.5rem; line-height: 1; background: none; border: none; cursor: pointer; transition: var(--transition-fast); }
+#closeMentorButton:hover { color: var(--color-heytek-gold); transform: scale(1.2); }
+
+
+/* --- Game Phases & Activity Cards --- */
+.game-phase { padding: 0.5rem; opacity: 0; transition: opacity var(--transition-slow) ease-in-out; } 
+.game-phase:not(.hidden) { opacity: 1; }
+
+.phase-title {
+    font-family: var(--font-title);
+    color: var(--color-heytek-gold); 
+    border-bottom: 4px solid var(--color-heytek-gold);
+    text-shadow: 0 0 15px var(--color-heytek-gold-glow), 0 0 6px var(--color-heytek-gold);
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.25rem;
+    font-size: 2.25rem; 
+    letter-spacing: -0.01em;
+}
+.phase-progress { font-size: 0.7em; color: var(--color-text-secondary); margin-left: 0.6em; font-weight: 500; letter-spacing: 0.04em; }
+
+.activity-card {
+    background-color: var(--color-background-card);
+    border-radius: var(--border-radius-main);
+    padding: 2rem; 
+    margin-bottom: 2.5rem;
+    box-shadow: var(--shadow-lg), 0 0 0 1px rgba(255,193,7,0.15); /* Gold outline */
+    border: 1px solid rgba(255, 193, 7, 0.25); /* Gold border */
+    position: relative;
+    overflow: hidden; 
+}
+.activity-card::before { 
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; 
+    background: linear-gradient(to right, transparent, rgba(255,193,7,0.3), transparent); /* Gold gradient line */
+}
+.activity-header {
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.1); 
+    padding-bottom: 1rem; margin-bottom: 1rem;
+}
+.activity-title {
+    font-family: var(--font-title);
+    font-size: 1.5rem; 
+    color: var(--color-text-light); /* Changed from heytek-blue-light to ensure contrast on darker card */
+    letter-spacing: -0.01em;
+}
+.activity-status-icon {
+    width: 28px; height: 28px; 
+    border: 2px solid var(--color-text-secondary);
+    background-color: rgba(255,255,255,0.08);
+    border-radius: 50%;
+    position: relative;
+    transition: var(--transition-main);
+}
+.activity-status-icon[data-completed="true"] {
+    background-color: var(--color-success); border-color: var(--color-success);
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.5);
+}
+.activity-status-icon[data-completed="true"]::after {
+    content: '✔';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    color: white; font-size: 16px; font-weight: bold;
+}
+.activity-description { color: var(--color-text-secondary); font-size: 0.95rem; margin-bottom: 1.5rem; line-height: 1.7; }
+.interactive-area {
+    background-color: var(--color-background-interactive);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-inset);
+    border: 1px solid rgba(255,193,7,0.2); /* Gold border */
+}
+.interactive-sub-card {
+    background-color: rgba(0, 25, 50, 0.75); /* Darker blue for sub-cards */
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid rgba(255,193,7,0.2); /* Gold border */
+}
+.sub-activity-title {
+    font-size: 1.1rem;
+    font-weight: 600; 
+    color: var(--color-heytek-cyan-text);
+    margin-bottom: 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed rgba(0, 229, 255, 0.25);
+}
+.consultant-cta {
+    margin-top: 1.5rem;
+    padding: 1rem 1.25rem;
+    background-color: rgba(168, 85, 247, 0.08); 
+    border: 1px solid rgba(168, 85, 247, 0.25); 
+    border-radius: var(--border-radius-md);
+    text-align: center;
+}
+.consultant-cta p { color: var(--color-purple-text-light); margin-bottom: 0.75rem; font-size: 0.85rem; }
+
+
+/* --- Specific Activity Elements --- */
+/* Lean Canvas */
+.lean-canvas-section {
+    background-color: rgba(0, 30, 60, 0.75); /* Darker blue for sections */
+    padding: 1rem; 
+    border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(255, 193, 7, 0.3); /* Gold border */
+    transition: var(--transition-main);
+    display: flex; flex-direction: column;
+}
+.lean-canvas-section:hover { transform: translateY(-2px) scale(1.01); box-shadow: var(--shadow-md), 0 0 15px rgba(255,193,7,0.2); }
+.section-label {
+    color: var(--color-heytek-cyan-glow);
+    margin-bottom: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-shadow: 0 0 5px var(--color-heytek-cyan-glow);
+}
+.drop-target {
+    background-color: rgba(0, 7, 17, 0.8); /* Darkest blue for drop target */
+    border: 2px dashed rgba(255, 193, 7, 0.5); /* Gold dashed border */
+    min-height: 70px; 
+    padding: 0.5rem;
+    border-radius: var(--border-radius-sm);
+    flex-grow: 1;
+    transition: var(--transition-fast);
+    display: flex; 
+    flex-wrap: wrap; 
+    align-content: flex-start; 
+    gap: 0.3rem; 
+}
+.insight-orb {
+    background-image: linear-gradient(135deg, var(--color-heytek-blue-accent) 0%, var(--color-info) 100%);
+    color: var(--color-text-light);
+    padding: 0.5rem 1rem; 
+    border-radius: 25px;
+    font-size: 0.85rem;
+    box-shadow: var(--shadow-sm), 0 0 5px rgba(255,255,255,0.1) inset;
+    border: 1px solid rgba(255,255,255,0.25);
+    font-weight: 500;
+    cursor: grab;
+    transition: var(--transition-fast);
+}
+.insight-orb:hover {
+    background-image: linear-gradient(135deg, #3b82f6 0%, var(--color-heytek-blue-accent) 100%);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: var(--shadow-md), 0 0 8px rgba(255,255,255,0.15) inset;
+}
+.insight-orb.disabled-draggable { opacity: 0.5; cursor: not-allowed; pointer-events: none; filter: grayscale(40%); }
+.dropped-orb {
+    background-color: var(--color-heytek-gold); color: var(--color-heytek-blue-darkest);
+    padding: 0.3rem 0.7rem; 
+    border-radius: 15px; font-size: 0.75rem; font-weight: 600;
+    box-shadow: var(--shadow-xs); display: inline-block;
+}
+
+/* MVV & Branding Inputs */
+.input-field {
+    background-color: rgba(0, 7, 17, 0.9); /* Darkest blue */
+    border: 1px solid rgba(255, 193, 7, 0.5); /* Gold border */
+    color: var(--color-text-light);
+    padding: 0.8rem 1rem; 
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-inset);
+    font-size: 0.9rem;
+    transition: var(--transition-fast);
+    width: 100%; 
+}
+.input-field:focus {
+    border-color: var(--color-heytek-gold-hover);
+    background-color: var(--color-heytek-black);
+    box-shadow: 0 0 0 3px var(--color-heytek-gold-glow), var(--shadow-inset), 0 0 10px var(--color-heytek-gold-glow);
+    outline: none;
+}
+.input-field::placeholder { color: var(--color-text-placeholder); opacity: 0.7; }
+textarea.input-field { min-height: 70px; line-height: 1.5; }
+select.input-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3E%3Cpath stroke='%23FFC107' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3E%3C/svg%3E"); /* Gold arrow */
+    background-repeat: no-repeat; background-position: right 0.6rem center; background-size: 1.1em;
+    padding-right: 2.2rem;
+}
+.styled-checkbox {
+    appearance: none;
+    width: 1.2em; height: 1.2em; 
+    border: 2px solid var(--color-heytek-blue-accent);
+    border-radius: 0.25em;
+    margin-right: 0.4em;
+    vertical-align: middle;
+    position: relative;
+    cursor: pointer;
+    transition: var(--transition-fast);
+    flex-shrink: 0; 
+}
+.styled-checkbox:checked {
+    background-color: var(--color-heytek-gold);
+    border-color: var(--color-heytek-gold-hover);
+    box-shadow: 0 0 5px var(--color-heytek-gold-glow);
+}
+.styled-checkbox:checked::after {
+    content: '✔';
+    position: absolute; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    color: var(--color-heytek-blue-darkest);
+    font-weight: bold; font-size: 0.8em;
+}
+.value-option label, .feature-option label { color: var(--color-text-light); font-size: 0.95rem; cursor: pointer;}
+
+.input-color-picker {
+    -webkit-appearance: none; -moz-appearance: none; appearance: none;
+    width: 36px; height: 36px; padding: 0; border: none;
+    border-radius: var(--border-radius-sm); 
+    box-shadow: var(--shadow-sm); border: 2px solid rgba(255,255,255,0.3);
+    cursor: pointer;
+    background-color: transparent; 
+}
+.input-color-picker::-webkit-color-swatch-wrapper { padding: 0; }
+.input-color-picker::-webkit-color-swatch { border: none; border-radius: calc(var(--border-radius-sm) - 2px); } 
+.input-color-picker::-moz-color-swatch { border: none; border-radius: calc(var(--border-radius-sm) - 2px); }
+
+#primaryColorValue, #secondaryColorValue {
+    font-family: monospace; font-size: 0.8rem;
+    background-color: rgba(0,0,0,0.35); padding: 0.25rem 0.4rem;
+    border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+/* Team Assignment */
+.role-slot {
+    border: 2px dashed rgba(255, 193, 7, 0.5); /* Gold dashed border */
+    background-color: var(--color-heytek-blue-glass);
+    min-height: 110px; 
+    padding: 0.8rem; border-radius: var(--border-radius-md);
+    transition: var(--transition-fast);
+    display: flex; 
+    flex-direction: column; 
+    align-items: center; 
+    justify-content: center; 
+    text-align: center; 
+}
+.role-slot.drag-over-active { background-color: rgba(255, 193, 7, 0.2); border-style: solid; }
+.role-label { color: var(--color-heytek-cyan-text); font-size: 0.95rem; font-weight: 600; margin-bottom: 0.4rem; }
+.assigned-character { transition: var(--transition-fast); }
+.assigned-character:not(.placeholder-content) {
+    color: var(--color-heytek-gold); font-weight: 600; font-size: 0.95rem; margin-top: 0.4rem;
+    background-color: rgba(255,193,7,0.1); padding: 0.4rem 0.6rem; border-radius: var(--border-radius-sm);
+    border: 1px solid rgba(255,193,7,0.3);
+}
+.assigned-character.placeholder-content { color: var(--color-text-placeholder); font-style: italic; font-weight: normal; background: none; border: none; padding: 0;}
+.skill-match-indicator { font-size: 0.7rem; margin-top: 0.25rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.skill-match-indicator.match-good { color: var(--color-success); font-weight: 600; }
+.skill-match-indicator.match-poor { color: var(--color-warning); font-weight: 600; }
+.character-card {
+    background-image: linear-gradient(135deg, var(--color-purple-consultant) 0%, var(--color-purple-consultant-hover) 100%);
+    color: var(--color-text-light);
+    padding: 0.7rem 1.1rem;
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    border: 1px solid rgba(255,255,255,0.15);
+    box-shadow: var(--shadow-sm);
+    cursor: grab; transition: var(--transition-fast);
+}
+.character-card:hover {
+    background-image: linear-gradient(135deg, var(--color-purple-consultant-hover) 0%, var(--color-purple-consultant) 100%);
+    transform: translateY(-1px) scale(1.03);
+    box-shadow: var(--shadow-md);
+}
+.character-card.dragging-active { z-index: 10010; }
+.character-card.assigned-elsewhere { opacity: 0.5; cursor: not-allowed; filter: grayscale(60%); }
+
+
+/* Progress Bars */
+.progress-bar-container { margin-bottom: 0.8rem; }
+.progress-bar-label { font-size: 0.85rem; margin-bottom: 0.25rem; color: var(--color-text-secondary); }
+.progress-bar-bg {
+    height: 16px; background-color: rgba(0,0,0,0.55);
+    border-radius: var(--border-radius-md); overflow: hidden;
+    box-shadow: var(--shadow-inset);
+}
+.progress-bar-fill {
+    height: 100%; border-radius: var(--border-radius-md);
+    transition: width 0.5s ease-out, background-color 0.5s ease-out;
+    background-image: linear-gradient(45deg, rgba(255,255,255,.15) 25%, transparent 25%, transparent 50%, rgba(255,255,255,.15) 50%, rgba(255,255,255,.15) 75%, transparent 75%, transparent);
+    background-size: 35px 35px;
+    animation: progress-bar-stripes 1.8s linear infinite;
+}
+@keyframes progress-bar-stripes { from { background-position: 35px 0; } to { background-position: 0 0; } }
+
+
+/* Footer Market Pulse Ticker */
+#tekvilleMarketPulse { height: 1.4rem; position: relative; overflow: hidden; }
+.pulse-ticker {
+    color: var(--color-heytek-cyan-text); opacity: 0.9; font-weight: 500; font-size: 0.75rem;
+    position: absolute; white-space: nowrap;
+    animation: ticker-scroll 40s linear infinite; 
+}
+.pulse-ticker:hover { animation-play-state: paused; }
+.pulse-ticker span { margin-right: 60px; } 
+@keyframes ticker-scroll {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-180%); } 
+}
+
+
+/* Tooltips Refinements */
+[data-tooltip]::after {
+    max-width: 220px; 
+    word-wrap: break-word; 
+    box-shadow: var(--shadow-sm); 
+}
+
+
+/* Draggable & Drop Zone Active States */
+.dragging-active {
+    opacity: 0.85 !important; transform: rotate(2.5deg) scale(1.1) !important;
+    box-shadow: var(--shadow-lg), 0 0 20px var(--color-heytek-gold) !important; /* Gold glow on drag */
+    z-index: 10020; cursor: grabbing !important;
+}
+.drop-target.drag-over-active {
+    background-color: rgba(255, 193, 7, 0.3) !important;
+    border-color: var(--color-heytek-gold) !important;
+    border-style: solid !important;
+    box-shadow: 0 0 0 5px var(--color-heytek-gold-glow), var(--shadow-inset) !important;
+}
+
+
+/* Settings Modal Specifics */
+.styled-range {
+    -webkit-appearance: none; appearance: none;
+    width: 100%; height: 8px; background: rgba(0,0,0,0.45);
+    border-radius: 4px; outline: none; opacity: 0.8;
+    transition: opacity .2s; box-shadow: var(--shadow-inset);
+}
+.styled-range:hover { opacity: 1; }
+.styled-range::-webkit-slider-thumb {
+    -webkit-appearance: none; appearance: none;
+    width: 20px; height: 20px;
+    background: var(--color-heytek-gold); border-radius: 50%;
+    border: 2px solid var(--color-heytek-blue-darkest);
+    cursor: pointer; box-shadow: var(--shadow-sm);
+}
+.styled-range::-moz-range-thumb {
+    width: 18px; height: 18px;
+    background: var(--color-heytek-gold); border-radius: 50%;
+    border: 2px solid var(--color-heytek-blue-darkest);
+    cursor: pointer; box-shadow: var(--shadow-sm);
+}
+
+
+/* Achievements Modal Specifics */
+#achievementsList { padding-right: 0.4rem; }
+.achievement-item {
+    padding: 0.8rem; border-radius: var(--border-radius-md);
+    background-color: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,193,7,0.2); /* Gold border */
+    transition: var(--transition-fast);
+}
+.achievement-item:hover {
+    background-color: rgba(255,193,7,0.1) !important; /* Gold hover */
+    border-color: rgba(255,193,7,0.4) !important;
+    transform: translateX(4px);
+}
+.achievement-item h4 { color: var(--color-heytek-gold); margin-bottom: 0.2rem; font-size: 1.05rem; }
+.achievement-item p { font-size: 0.85rem; color: var(--color-text-secondary); }
+
+
+/* --- Buttons --- */
+.button {
+    padding: 0.7rem 1.5rem; 
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    font-size: 0.9rem; 
+    text-transform: uppercase;
+    letter-spacing: 0.025em; 
+    border: 1px solid transparent; 
+    transition: var(--transition-main);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    text-shadow: 1px 1px 1px rgba(0,0,0,0.2);
+    display: inline-flex; align-items: center; justify-content: center;
+    user-select: none; 
+}
+.button:hover:not(:disabled) { 
+    transform: translateY(-2px) scale(1.02); 
+    box-shadow: var(--shadow-md);
+}
+.button:active:not(:disabled) {
+    transform: translateY(0px) scale(0.99);
+    box-shadow: var(--shadow-xs);
+}
+.button:disabled {
+    opacity: 0.6; 
+    cursor: not-allowed;
+    filter: grayscale(20%);
+}
+.button svg { margin-right: 0.4em; width: 1.1em; height: 1.1em; }
+
+.button-primary {
+    background-image: linear-gradient(150deg, var(--color-heytek-gold) 0%, var(--color-heytek-orange-accent) 100%);
+    color: var(--color-heytek-blue-darkest);
+    border-color: rgba(0,0,0,0.1); 
+    font-weight: 600; 
+}
+.button-primary:hover:not(:disabled) { background-image: linear-gradient(150deg, var(--color-heytek-gold-hover) 0%, #ff8500 100%); border-color: rgba(0,0,0,0.2); } 
+
+.button-action {
+    background-image: linear-gradient(150deg, var(--color-heytek-blue-accent) 0%, var(--color-info) 100%);
+    color: var(--color-text-light);
+    border-color: rgba(255,255,255,0.1);
+}
+.button-action:hover:not(:disabled) { background-image: linear-gradient(150deg, #70aeff 0%, var(--color-heytek-blue-mid) 100%); border-color: var(--color-heytek-blue-accent); } 
+
+.button-secondary {
+    background-color: rgba(96, 165, 250, 0.25);
+    color: var(--color-heytek-blue-light);
+    border: 1px solid rgba(96, 165, 250, 0.4);
+    text-shadow: none; box-shadow: var(--shadow-xs);
+}
+.button-secondary:hover:not(:disabled) { background-color: rgba(96, 165, 250, 0.35); border-color: var(--color-heytek-blue-accent); color: white; }
+
+.button-tertiary, .logo-choice-btn {
+    background-color: rgba(255,255,255,0.07);
+    color: var(--color-text-secondary);
+    border: 1px solid rgba(255,255,255,0.15);
+    font-size: 0.8rem; padding: 0.5rem 1rem; text-transform: none;
+    box-shadow: var(--shadow-xs);
+}
+.button-tertiary:hover:not(:disabled), .logo-choice-btn:hover:not(.active){
+    background-color: rgba(255,255,255,0.12);
+    border-color: rgba(255,255,255,0.25);
+    color: var(--color-text-light);
+}
+.logo-choice-btn.active {
+    background-color: var(--color-heytek-gold);
+    color: var(--color-heytek-blue-darkest);
+    border-color: var(--color-heytek-gold-hover);
+    box-shadow: var(--shadow-sm), 0 0 10px var(--color-heytek-gold-glow);
+}
+
+.button-consult {
+    background-image: linear-gradient(150deg, var(--color-purple-consultant) 0%, var(--color-purple-consultant-hover) 100%);
+    color: var(--color-text-light);
+    border-color: rgba(255,255,255,0.1);
+}
+.button-consult:hover:not(:disabled) { background-image: linear-gradient(150deg, #b983ff 0%, var(--color-purple-consultant) 100%); border-color: var(--color-purple-text-light); }
+
+.button-muted {
+    background-color: rgba(107, 114, 128, 0.25); 
+    color: var(--color-text-secondary);
+    border-color: rgba(107, 114, 128, 0.4);
+    text-transform: none; box-shadow: var(--shadow-xs); text-shadow: none;
+}
+.button-muted:hover:not(:disabled) { background-color: rgba(107, 114, 128, 0.35); border-color: var(--color-text-secondary); color: var(--color-text-light); }
+
+.button-danger {
+    background-image: linear-gradient(150deg, var(--color-danger) 0%, #c53030 100%); 
+    color: var(--color-text-light);
+    border-color: rgba(0,0,0,0.1);
+}
+.button-danger:hover:not(:disabled) { background-image: linear-gradient(150deg, #f87171 0%, var(--color-danger) 100%); border-color: #ef4444; } 
+
+.button-phase-complete {
+    font-size: 1rem !important;
+    padding-top: 0.9rem !important; padding-bottom: 0.9rem !important;
+    font-family: var(--font-title);
+    letter-spacing: 0.04em;
+}
+.button-ai-generate { /* Specific class for AI generate buttons if needed for distinct styling */
+    /* Example: border: 1px dashed var(--color-heytek-cyan-text); */
+}
+
+
+/* --- TekerBot Chat Modal Styles --- */
+#tekerBotChatModal .modal-content { /* Updated ID */
+    max-width: 600px; 
+    /* Height is set inline in HTML (h-[80vh] md:h-[70vh]), can be adjusted here too */
+}
+
+#tekerBotChatMessages { /* Updated ID */
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem; /* space-y-3 */
+    scrollbar-width: thin; 
+    scrollbar-color: var(--color-heytek-gold) rgba(0,0,0,0.3); /* Gold scrollbar thumb */
+}
+#tekerBotChatMessages::-webkit-scrollbar { width: 8px; }
+#tekerBotChatMessages::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); border-radius: 4px;}
+#tekerBotChatMessages::-webkit-scrollbar-thumb { background-color: var(--color-heytek-gold); border-radius: 4px;}
+#tekerBotChatMessages::-webkit-scrollbar-thumb:hover { background-color: var(--color-heytek-gold-hover); }
+
+
+.chat-message {
+    display: flex;
+    flex-direction: column;
+    max-width: 85%;
+}
+
+.chat-message .font-semibold { 
+    font-size: 0.8rem;
+    margin-bottom: 0.125rem; 
+    opacity: 0.8;
+}
+
+.message-bubble {
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius-lg); 
+    line-height: 1.5;
+    word-wrap: break-word;
+    box-shadow: var(--shadow-sm);
+}
+
+.chat-message.bo-message { /* For TekerBot's messages */
+    align-self: flex-start;
+}
+.chat-message.bo-message .message-bubble {
+    background-color: var(--color-heytek-blue-mid); 
+    color: var(--color-text-light);
+    border-top-left-radius: var(--border-radius-sm); 
+}
+.chat-message.bo-message .font-semibold {
+    color: var(--color-heytek-cyan-text);
+}
+
+.chat-message.user-message {
+    align-self: flex-end;
+}
+.chat-message.user-message .message-bubble {
+    background-color: var(--color-heytek-gold);
+    color: var(--color-heytek-blue-darkest);
+    border-top-right-radius: var(--border-radius-sm); 
+}
+.chat-message.user-message .font-semibold {
+    color: var(--color-heytek-gold-text);
+    text-align: right;
+}
+
+/* Thinking indicator for TekerBot */
+.bo-thinking .message-bubble { /* Target the bubble inside the thinking message */
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background-color: var(--color-heytek-blue-mid); /* Consistent with Bo's bubbles */
+    color: var(--color-text-light);
+    padding: 0.6rem 1rem;
+    border-radius: var(--border-radius-lg);
+    border-top-left-radius: var(--border-radius-sm);
+}
+.bo-thinking .dot-pulse {
+  position: relative;
+  left: -9999px; /* Hack to hide the original dot */
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: var(--color-heytek-cyan-text);
+  color: var(--color-heytek-cyan-text);
+  box-shadow: 9999px 0 0 -5px; /* Initial dot */
+  animation: dotPulse 1.5s infinite linear;
+  animation-delay: .25s;
+  margin-left: 5px; /* Space from "TekerBot is typing" text */
+}
+.bo-thinking .dot-pulse::before, .bo-thinking .dot-pulse::after {
+  content: '';
+  display: inline-block;
+  position: absolute;
+  top: 0;
+  width: 8px;
+  height: 8px;
+  border-radius: 5px;
+  background-color: var(--color-heytek-cyan-text);
+  color: var(--color-heytek-cyan-text);
+}
+.bo-thinking .dot-pulse::before {
+  box-shadow: 9984px 0 0 -5px; /* First dot to the left */
+  animation: dotPulseBefore 1.5s infinite linear;
+  animation-delay: 0s;
+}
+.bo-thinking .dot-pulse::after {
+  box-shadow: 10014px 0 0 -5px; /* Third dot to the right */
+  animation: dotPulseAfter 1.5s infinite linear;
+  animation-delay: .5s;
+}
+
+@keyframes dotPulseBefore {
+  0% { box-shadow: 9984px 0 0 -5px; }
+  30% { box-shadow: 9984px 0 0 2px; }
+  60%, 100% { box-shadow: 9984px 0 0 -5px; }
+}
+@keyframes dotPulse {
+  0% { box-shadow: 9999px 0 0 -5px; }
+  30% { box-shadow: 9999px 0 0 2px; }
+  60%, 100% { box-shadow: 9999px 0 0 -5px; }
+}
+@keyframes dotPulseAfter {
+  0% { box-shadow: 10014px 0 0 -5px; }
+  30% { box-shadow: 10014px 0 0 2px; }
+  60%, 100% { box-shadow: 10014px 0 0 -5px; }
+}
+
+
+/* --- Phase Transition Animations (Applied by JS) --- */
+.phase-enter-active { animation: fadeInFromRight 0.55s var(--transition-main) forwards; }
+.phase-exit-active { animation: fadeOutToLeft 0.4s var(--transition-main) forwards; }
+
+@keyframes fadeInFromRight {
+    from { opacity: 0; transform: translateX(35px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+@keyframes fadeOutToLeft {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(-35px); }
+}
+
+
+/* --- Responsive Design Adjustments --- */
+@media (max-width: 1024px) { /* lg breakpoint */
+    .activity-card { padding: 1.75rem; }
+    .phase-title { font-size: 2rem; margin-bottom: 2rem; padding-bottom: 1rem; }
+    .activity-title { font-size: 1.35rem; }
+    #leanCanvasDropArea { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
+}
+
+@media (max-width: 768px) { /* md breakpoint */
+    #gameHeader { padding: 0.75rem 1rem; }
+    #gameHeader h1 { font-size: 1.5rem; }
+    #liveDashboard { flex-wrap: wrap; justify-content: flex-end; gap: 0.25rem; } 
+    #liveDashboard .dashboard-item { padding: 0.3rem 0.5rem; font-size: 0.7rem; }
+    #mainGameArea { padding: 1rem; }
+    .activity-card { padding: 1.5rem; }
+    .phase-title { font-size: 1.75rem; margin-bottom: 1.75rem; padding-bottom: 0.8rem; }
+    .activity-title { font-size: 1.25rem; }
+    .button { padding: 0.6rem 1.2rem; font-size: 0.85rem; }
+    
+    .modal-content.glassmorphic-panel { max-width: 90%; margin-left: auto; margin-right: auto;}
+    .modal-header { padding: 1rem 1.25rem; } .modal-header h2 { font-size: 1.5rem; }
+    .modal-body-content, .modal-footer { padding: 1rem 1.25rem !important; }
+
+    #aiMentorBo { max-width: calc(100% - 2rem); padding: 1rem; bottom: 0.75rem; right: 0.75rem; left: 0.75rem; margin-left:auto; margin-right:auto;}
+    #aiMentorBo h3 { font-size: 1rem; } #aiMentorBo p { font-size: 0.85rem; }
+    #leanCanvasDropArea { grid-template-columns: 1fr 1fr; } 
+    .lean-canvas-section.md\:col-span-3 { grid-column: span 2 / span 2 !important; } 
+    .lean-canvas-section.md\:col-span-1 { }
+    .lean-canvas-section.md\:col-span-2 { }
+
+    #tekerBotChatModal .modal-content { max-height: 85vh; } 
+}
+
+@media (max-width: 600px) { /* sm breakpoint or smaller */
+    #gameHeader { flex-direction: column; align-items: center; gap: 0.5rem; }
+    #gameHeader .flex.items-center.space-x-3 { justify-content: center; text-align: center; width: 100%;}
+    #gameHeader h1 { font-size: 1.4rem; }
+    #headerCompanyName { font-size: 0.6rem; }
+    #liveDashboard { width: 100%; justify-content: space-around; gap: 0.2rem; }
+    #liveDashboard .dashboard-item { font-size: 0.65rem; padding: 0.25rem 0.4rem; flex-grow: 1; text-align: center; }
+    .quick-controls { width: 100%; justify-content: space-around; margin-top: 0.5rem; }
+
+    .activity-card { padding: 1rem; }
+    .phase-title { font-size: 1.5rem; }
+    .activity-title { font-size: 1.1rem; }
+    .button { padding: 0.6rem 1rem; font-size: 0.8rem; letter-spacing: 0.02em; }
+    .button.button-phase-complete { font-size: 0.9rem !important; padding-top: 0.8rem; padding-bottom: 0.8rem; }
+    
+    .modal-content.glassmorphic-panel { width: 95%; }
+    .modal-header h2 { font-size: 1.3rem; }
+    #tekvilleMarketPulse { font-size: 0.65rem; height: 1rem; }
+    .pulse-ticker { animation-duration: 30s; }
+    #leanCanvasDropArea { grid-template-columns: 1fr; } 
+    .lean-canvas-section { grid-column: span 1 / span 1 !important; } 
+    .interactive-sub-card { padding: 0.8rem; }
+    #productFeaturesArea .grid, #coreValuesSelector { grid-template-columns: 1fr; } 
+    #teamRolesDropArea { grid-template-columns: 1fr; } 
+    #characterPool .character-card { font-size: 0.85rem; padding: 0.5rem 0.8rem; }
+
+    #tekerBotChatModal .modal-content { max-height: 90vh; }
+    #tekerBotChatModal .modal-footer { padding: 0.75rem !important; }
+    #tekerBotChatModal #tekerBotChatInput { font-size: 0.85rem; }
+    #tekerBotChatModal #sendTekerBotChatMessageButton { padding: 0.5rem 0.75rem; }
+    #tekerBotChatModal #sendTekerBotChatMessageButton svg { width: 1rem; height: 1rem; }
+    #tekerBotChatModal #sendTekerBotChatMessageButton span { font-size: 0.8rem; }
+}
+
+/* Critical error display style for JS failures */
+.critical-error-display {
+    padding:20px; color: #ffd700; text-align:center; font-family:monospace; 
+    background-color: #000f23; height:100vh; display:flex; 
+    flex-direction:column; justify-content:center; align-items:center;
+}
+.critical-error-display p {font-size: 1.2em;}
+.critical-error-display pre {
+    color: #ff7b7b; font-size: 0.8em; white-space: pre-wrap; 
+    text-align: left; max-height: 300px; overflow-y: auto; 
+    border: 1px solid red; padding: 10px; margin-top:15px;
+    background-color: rgba(0,0,0,0.2);
+}

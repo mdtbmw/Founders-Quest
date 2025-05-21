@@ -1,0 +1,580 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Founder's Quest™: An interactive, AI-powered business simulation game by HeyTek Limited, guiding founders from idea to launch using the iBOG™ framework.">
+    <title>Founder's Quest™ by HeyTek Limited - Master Your Startup Journey</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/tone/14.8.49/Tone.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Orbitron:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon"> <style>
+        /* Basic Preloader Style */
+        #preloader { position: fixed; left: 0; top: 0; width: 100%; height: 100%; z-index: 10000; background-color: #000f23; display: flex; justify-content: center; align-items: center; flex-direction: column; transition: opacity 0.6s ease-out, transform 0.6s ease-out; }
+        #preloader .spinner { border: 5px solid rgba(255, 255, 255, 0.2); border-left-color: #FFC107; border-radius: 50%; width: 60px; height: 60px; animation: spin 1.2s linear infinite; }
+        #preloader p { color: #FFC107; margin-top: 20px; font-family: 'Orbitron', sans-serif; font-size: 1.3em; letter-spacing: 0.05em; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .preload-finished { opacity: 0 !important; pointer-events: none !important; transform: scale(1.5) !important; }
+
+        /* Basic Tooltip Style (Enhanced in styles.css) */
+        [data-tooltip] { position: relative; }
+        [data-tooltip]:hover::after, [data-tooltip]:focus::after { /* Added :focus for accessibility */
+            content: attr(data-tooltip); position: absolute; bottom: 105%;
+            left: 50%; transform: translateX(-50%);
+            background-color: var(--color-heytek-blue-darkest, #000711); color: var(--color-text-light, #e5e7eb);
+            padding: 8px 12px; border-radius: var(--border-radius-md, 0.75rem); font-size: 0.85em;
+            white-space: nowrap; z-index: 1050; opacity: 0; visibility: hidden;
+            transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+            pointer-events: none; 
+        }
+        [data-tooltip]:hover::before, [data-tooltip]:focus::before { /* Added :focus for accessibility */
+            content: ''; position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%);
+            border-width: 6px; border-style: solid;
+            border-color: var(--color-heytek-blue-darkest, #000711) transparent transparent transparent;
+            opacity: 0; visibility: hidden; transition: opacity 0.2s ease-out, visibility 0.2s ease-out;
+            z-index: 1050; pointer-events: none;
+        }
+        [data-tooltip]:hover::after, [data-tooltip]:hover::before,
+        [data-tooltip]:focus::after, [data-tooltip]:focus::before { opacity: 1; visibility: visible; }
+
+        /* Ensure body takes full height for flex centering of preloader */
+        html, body { height: 100%; margin: 0; }
+        body { display: flex; flex-direction: column; }
+        #gameWorld { flex-grow: 1; } /* Make gameWorld take remaining space */
+
+        /* Critical error display style for JS failures */
+        .critical-error-display {
+            padding:20px; color: #ffd700; text-align:center; font-family:monospace; 
+            background-color: #000f23; height:100vh; display:flex; 
+            flex-direction:column; justify-content:center; align-items:center;
+        }
+        .critical-error-display p {font-size: 1.2em;}
+        .critical-error-display pre {
+            color: #ff7b7b; font-size: 0.8em; white-space: pre-wrap; 
+            text-align: left; max-height: 300px; overflow-y: auto; 
+            border: 1px solid red; padding: 10px; margin-top:15px;
+            background-color: rgba(0,0,0,0.2);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 font-inter text-gray-200 antialiased overflow-x-hidden selection:bg-yellow-500 selection:text-blue-900">
+
+    <div id="preloader" role="status" aria-live="polite">
+        <div class="spinner" aria-hidden="true"></div>
+        <p>Booting Founder's Quest OS...</p>
+    </div>
+
+    <div id="gameWorld" class="min-h-screen flex flex-col items-center justify-center p-1 md:p-2 bg-cover bg-center bg-fixed" style="background-image: url('https://placehold.co/2560x1440/000a1a/001f3f?text=Founder%27s+Quest+Horizon&fontsize=100');" onerror="this.style.backgroundImage='url(https://placehold.co/2560x1440/000a1a/001f3f?text=Background+Load+Error&fontsize=80)'; this.style.backgroundSize='cover'; this.style.backgroundPosition='center';">
+        
+        <div id="gameUIWrapper" class="w-full max-w-7xl h-[95vh] md:h-[90vh] bg-black bg-opacity-75 backdrop-blur-2xl shadow-2xl rounded-2xl overflow-hidden border-2 border-blue-500 border-opacity-50 flex flex-col transition-opacity duration-500 opacity-0">
+            
+            <header id="gameHeader" class="p-3 md:p-4 border-b-2 border-blue-400 border-opacity-30 bg-black bg-opacity-50 flex-shrink-0">
+                <div class="container mx-auto flex flex-wrap justify-between items-center gap-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center text-blue-900 font-bold text-2xl shadow-lg transform transition-transform hover:scale-110" aria-hidden="true">FQ</div>
+                        <div>
+                            <h1 class="text-3xl md:text-4xl font-orbitron text-yellow-400 tracking-wide" style="text-shadow: 0 0 8px #FFD700, 0 0 15px #FF8C00;">Founder's Quest™</h1>
+                            <p id="headerCompanyName" class="text-xs text-cyan-300 font-medium tracking-wider uppercase">Your Company Name</p>
+                        </div>
+                    </div>
+                    <div id="liveDashboard" class="flex items-center flex-wrap gap-x-3 gap-y-1 text-xs md:text-sm" role="toolbar" aria-label="Game Performance Metrics">
+                        <span class="dashboard-item group" data-tooltip="Idea Clarity Score" role="status" aria-live="polite"><svg class="icon fill-current w-4 h-4" viewBox="0 0 20 20" role="img" aria-label="Clarity Icon"><title>Clarity Icon</title><path d="M10 12a2 2 0 100-4 2 2 0 000 4z"></path><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.022 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"></path></svg><span class="label">Clarity:</span> <span id="clarityScoreDisplay" class="value">0</span>%</span>
+                        <span class="dashboard-item group" data-tooltip="Business Structure Score" role="status" aria-live="polite"><svg class="icon fill-current w-4 h-4" viewBox="0 0 20 20" role="img" aria-label="Structure Icon"><title>Structure Icon</title><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"></path></svg><span class="label">Structure:</span> <span id="structureScoreDisplay" class="value">0</span>%</span>
+                        <span class="dashboard-item group" data-tooltip="Operational Execution Power" role="status" aria-live="polite"><svg class="icon fill-current w-4 h-4" viewBox="0 0 20 20" role="img" aria-label="Execution Icon"><title>Execution Icon</title><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.566.379-1.566 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.54.886-.061 2.042.947 2.287 1.566.379 1.566 2.6 0 2.978a1.532 1.532 0 01-.947 2.287c.54.886.061 2.042-.947 2.287-1.566.379-1.566 2.6 0 2.978a1.532 1.532 0 012.287.947c.836 1.372 2.942-.734 2.106-2.106a1.532 1.532 0 012.287-.947c1.566-.379 1.566-2.6 0-2.978a1.532 1.532 0 01-2.287-.947c-.836-1.372-2.942.734-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg><span class="label">Execution:</span> <span id="executionPowerDisplay" class="value">0</span>%</span>
+                        <span class="dashboard-item group" data-tooltip="Market Reception" role="status" aria-live="polite"><svg class="icon fill-current w-4 h-4" viewBox="0 0 20 20" role="img" aria-label="Market Icon"><title>Market Icon</title><path d="M2 10a8 8 0 018-8v8h8a8 8 0 11-16 0z"></path><path d="M12 2.252A8.014 8.014 0 0117.748 8H12V2.252z"></path></svg><span class="label">Market:</span> <span id="marketReceptionDisplay" class="value">0</span>%</span>
+                        <span class="dashboard-item currency-display group" data-tooltip="Your TekCoins Balance" role="status" aria-live="polite"><svg class="icon text-yellow-400 fill-current w-4 h-4" viewBox="0 0 20 20" role="img" aria-label="TekCoins Icon"><title>TekCoins Icon</title><path d="M10 2a8 8 0 100 16 8 8 0 000-16zm0 12a1 1 0 001-1V8a1 1 0 00-2 0v5a1 1 0 001 1zm0 2a1.5 1.5 0 100-3 1.5 1.5 0 000 3z"></path></svg><span class="label">TekCoins:</span> <span id="currencyDisplay" class="value text-yellow-300">1000</span></span>
+                    </div>
+                    <div class="quick-controls flex items-center space-x-2" role="toolbar" aria-label="Quick Game Controls">
+                        <button id="chatWithTekerBotButton" class="control-button" data-tooltip="Chat with TekerBot (AI Mentor)" data-sound-click="modal_open" aria-label="Chat with TekerBot">
+                            <svg class="icon w-5 h-5" viewBox="0 0 20 20" fill="currentColor" role="img" aria-hidden="true"><path fill-rule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zm-4 0H9v2h2V9z" clip-rule="evenodd"></path></svg>
+                        </button>
+                        <button id="saveGameButton" class="control-button" data-tooltip="Save Progress" data-sound-click="ui_save" aria-label="Save Game Progress"><svg class="icon w-5 h-5" viewBox="0 0 20 20" fill="currentColor" role="img" aria-hidden="true"><path d="M17 3h-4l-2-2H9L7 3H3a2 2 0 00-2 2v12a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-5 12H8V9h4v6zm4-8H4V5h3.268l2-2h1.464l2 2H16v2z"></path></svg></button>
+                        <button id="achievementsButton" class="control-button" data-tooltip="View Achievements" data-sound-click="modal_achievements_log" aria-label="View Achievements"><svg class="icon w-5 h-5" viewBox="0 0 20 20" fill="currentColor" role="img" aria-hidden="true"><path d="M10 15a5 5 0 100-10 5 5 0 000 10zm1-11a7 7 0 00-7 7H2a1 1 0 000 2h2a7 7 0 1012 0h2a1 1 0 000-2h-2a7 7 0 00-7-7z"></path></svg></button>
+                        <button id="settingsButton" class="control-button" data-tooltip="Game Settings" data-sound-click="modal_settings" aria-label="Open Game Settings"><svg class="icon w-5 h-5" viewBox="0 0 20 20" fill="currentColor" role="img" aria-hidden="true"><path fill-rule="evenodd" d="M11.49 3.17c-.38-1.56-2.6-1.56-2.98 0a1.532 1.532 0 01-2.286.948c-1.372-.836-2.942.734-2.106 2.106.54.886.061 2.042-.947 2.287-1.566.379-1.566 2.6 0 2.978a1.532 1.532 0 01.947 2.287c-.54.886-.061 2.042.947 2.287 1.566.379 1.566 2.6 0 2.978a1.532 1.532 0 01-.947 2.287c.54.886.061 2.042-.947 2.287-1.566.379-1.566 2.6 0 2.978a1.532 1.532 0 012.287.947c.836 1.372 2.942-.734 2.106-2.106a1.532 1.532 0 012.287-.947c1.566-.379 1.566-2.6 0-2.978a1.532 1.532 0 01-2.287-.947c-.836-1.372-2.942.734-2.106-2.106a1.532 1.532 0 01-2.287-.947zM10 13a3 3 0 100-6 3 3 0 000 6z" clip-rule="evenodd"></path></svg></button>
+                    </div>
+                </div>
+            </header>
+
+            <main id="mainGameArea" class="p-4 md:p-6 flex-grow overflow-y-auto custom-scrollbar">
+                
+                <div id="narrativeOnboardingModal" class="modal hidden" data-sound-open="modal_onboarding" role="dialog" aria-modal="true" aria-labelledby="onboardingModalTitle">
+                    <div class="modal-content max-w-lg glassmorphic-panel">
+                        <div class="modal-header">
+                            <h2 id="onboardingModalTitle" class="text-3xl font-orbitron text-yellow-300">Welcome to Founder's Quest!</h2>
+                            <button class="modal-close-btn" data-sound-click="ui_close" aria-label="Close Onboarding">&times;</button>
+                        </div>
+                        <div class="modal-body-content space-y-3 text-gray-300">
+                            <p>You're a visionary founder, ready to sculpt ideas into empires. Your AI Mentor, <strong class="text-cyan-300 font-semibold">TekerBot</strong>, will illuminate the path through the iBOG™ framework.</p>
+                            <p>The business world is bustling with talent. Experts like <strong class="text-purple-300 font-semibold">Daniel Innocent</strong>, the renowned Brand Strategist, offer their services... for a price in TekCoins.</p>
+                        </div>
+                        <fieldset class="p-5 border-2 border-yellow-400 border-opacity-50 border-dashed rounded-xl bg-gray-800 bg-opacity-60 shadow-lg mx-6 md:mx-8 my-6">
+                            <legend class="text-xl font-semibold text-yellow-200 mb-3 px-2">Your Initial Spark:</legend>
+                            <div class="mb-3">
+                                <label for="companyNameInput" class="block text-sm font-medium text-cyan-300 mb-1">Name Your Venture:</label>
+                                <input type="text" id="companyNameInput" placeholder="E.g., Apex Innovations, Nova Solutions" class="input-field w-full">
+                            </div>
+                            <div class="mb-3">
+                                <label for="ideaSourceSelect" class="block text-sm font-medium text-cyan-300 mb-1">Choose Your Idea Source:</label>
+                                <select id="ideaSourceSelect" class="input-field w-full" data-sound-change="ui_select">
+                                    <option value="generate">Generate a Raw Idea with TekerBot</option>
+                                    <option value="custom">I have my own Custom Idea</option>
+                                </select>
+                            </div>
+                            <div id="customIdeaInputContainer" class="hidden mb-3">
+                                <label for="customIdeaText" class="block text-sm font-medium text-cyan-300 mb-1">Describe Your Custom Idea:</label>
+                                <textarea id="customIdeaText" placeholder="Briefly describe your business concept..." class="input-field w-full" rows="2"></textarea>
+                            </div>
+                            <div id="rawIdeaCardDisplay" class="mt-2 p-3 bg-gray-700 bg-opacity-50 rounded-md" aria-live="polite">
+                                <p id="rawIdeaText" class="text-gray-200 text-lg">[Idea will appear here]</p>
+                                <p class="mt-2 text-xs text-cyan-400">Category: <span id="ideaCategory" class="font-semibold">[Category]</span></p>
+                            </div>
+                        </fieldset>
+                        <div class="modal-footer">
+                           <button id="startIdeatePhaseButton" class="button button-primary w-full text-lg py-3" data-sound-click="ui_confirm_major">Begin Your Quest!</button>
+                        </div>
+                    </div>
+                </div>
+
+                <aside id="aiMentorBo" class="fixed bottom-5 right-5 md:bottom-8 md:right-8 bg-gray-800 bg-opacity-80 backdrop-blur-lg p-5 rounded-xl shadow-xl border border-cyan-500 border-opacity-60 max-w-sm hidden z-30 transform transition-all duration-300 ease-out opacity-0 translate-y-10" role="complementary" aria-live="polite">
+                    <button id="closeMentorButton" class="absolute top-2 right-2 text-gray-400 hover:text-white transition-colors text-2xl leading-none" title="Close Mentor" data-sound-click="ui_close_subtle" aria-label="Close AI Mentor Panel">&times;</button>
+                    <h3 class="text-lg font-semibold text-cyan-300 mb-3 flex items-center">
+                        <svg class="w-6 h-6 mr-2 text-cyan-400 icon" fill="currentColor" viewBox="0 0 20 20" role="img" aria-label="AI Mentor Icon"><title>AI Mentor Icon</title><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg>
+                        TekerBot (AI Mentor)
+                    </h3>
+                    <p id="boMessage" class="text-sm text-gray-300 leading-relaxed">[TekerBot's guidance and tips will appear here]</p>
+                </aside>
+
+                <div id="danielConsultancyModal" class="modal hidden" data-sound-open="modal_consult" role="dialog" aria-modal="true" aria-labelledby="consultancyModalTitle">
+                    <div class="modal-content max-w-2xl glassmorphic-panel">
+                         <div class="modal-header">
+                            <h2 id="consultancyModalTitle" class="text-3xl font-orbitron text-purple-300">Daniel Innocent's Strategy Hub</h2>
+                            <button class="modal-close-btn" data-sound-click="ui_close" aria-label="Close Consultancy Modal">&times;</button>
+                        </div>
+                        <div class="modal-body-content">
+                            <p class="text-gray-300">Leverage premier Brand Development, Design, and Strategy services from HeyTek Limited to gain a competitive edge.</p>
+                            <div id="consultancyOptionsContainer" class="space-y-4 mt-4 max-h-[60vh] overflow-y-auto custom-scrollbar pr-3">
+                                </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button id="closeConsultancyModalButton" class="button button-muted closeModalButton" data-sound-click="ui_cancel">Review Later</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="phaseDisplayContainer" class="transition-opacity duration-500 ease-in-out">
+                    <section id="ideatePhase" class="game-phase hidden" aria-labelledby="ideatePhaseTitle">
+                        <h2 id="ideatePhaseTitle" class="phase-title">Phase 1: IDEATE - Spark & Validate <span id="ideatePhaseProgress" class="phase-progress" aria-live="polite"></span></h2>
+                        
+                        <article id="leanCanvasActivity" class="activity-card" aria-labelledby="leanCanvasActivityTitle">
+                            <div class="activity-header">
+                                <h3 id="leanCanvasActivityTitle" class="activity-title">1.1 Lean Canvas: Strategic Blueprint</h3>
+                                <div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Lean Canvas Status"></div>
+                            </div>
+                            <p class="activity-description">Drag 'Insight Orbs' to relevant sections on your Lean Canvas to map out your business model's core components. Match orb types to sections for best results.</p>
+                            <div id="leanCanvasDropArea" class="interactive-area grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 p-4 border-2 border-dashed border-blue-500 border-opacity-50 rounded-lg min-h-[300px] bg-gray-800 bg-opacity-40" aria-label="Lean Canvas Drop Zones">
+                                <div class="lean-canvas-section group" data-section="problem" aria-labelledby="lcProblemLabel"><span id="lcProblemLabel" class="section-label" data-tooltip="Define top 1-3 problems your idea solves.">Problem</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Problem orbs"></div></div>
+                                <div class="lean-canvas-section group" data-section="solution" aria-labelledby="lcSolutionLabel"><span id="lcSolutionLabel" class="section-label" data-tooltip="Outline your top 3 features that address these problems.">Solution</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Solution orbs"></div></div>
+                                <div class="lean-canvas-section group" data-section="uvp" aria-labelledby="lcUvpLabel"><span id="lcUvpLabel" class="section-label" data-tooltip="Your Unique Value Proposition: a single, clear, compelling message.">Unique Value Prop</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Unique Value Proposition orbs"></div></div>
+                                <div class="lean-canvas-section group" data-section="advantage" aria-labelledby="lcAdvantageLabel"><span id="lcAdvantageLabel" class="section-label" data-tooltip="Unfair Advantage: Something not easily copied or bought.">Unfair Advantage</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Unfair Advantage orbs"></div></div>
+                                <div class="lean-canvas-section group" data-section="channels" aria-labelledby="lcChannelsLabel"><span id="lcChannelsLabel" class="section-label" data-tooltip="Channels: Your pathways to reach customers.">Channels</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Channels orbs"></div></div>
+                                <div class="lean-canvas-section group" data-section="customer" aria-labelledby="lcCustomerLabel"><span id="lcCustomerLabel" class="section-label" data-tooltip="Customer Segments: Define your target audience and early adopters.">Customer Segments</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Customer Segments orbs"></div></div>
+                                <div class="lean-canvas-section md:col-span-3 group" data-section="metrics" aria-labelledby="lcMetricsLabel"><span id="lcMetricsLabel" class="section-label" data-tooltip="Key Metrics: How you'll measure progress and success.">Key Metrics</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Key Metrics orbs"></div></div>
+                                <div class="lean-canvas-section md:col-span-1 group" data-section="cost" aria-labelledby="lcCostLabel"><span id="lcCostLabel" class="section-label" data-tooltip="Cost Structure: List your fixed and variable costs.">Cost Structure</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Cost Structure orbs"></div></div>
+                                <div class="lean-canvas-section md:col-span-2 group" data-section="revenue" aria-labelledby="lcRevenueLabel"><span id="lcRevenueLabel" class="section-label" data-tooltip="Revenue Streams: How your business will make money.">Revenue Streams</span><div class="drop-target min-h-[50px] bg-gray-700 bg-opacity-30 rounded flex flex-wrap items-start justify-center p-1 space-y-1 space-x-1" aria-label="Drop zone for Revenue Streams orbs"></div></div>
+                            </div>
+                            <div id="leanCanvasDraggablesContainer" class="mt-4 p-3 bg-gray-800 bg-opacity-60 rounded-md">
+                                <h4 class="sub-activity-title text-cyan-300 mb-2">Available Insight Orbs:</h4>
+                                <div class="flex flex-wrap gap-2" aria-label="Available Insight Orbs for Lean Canvas">
+                                    <div class="draggable insight-orb" draggable="true" id="orbPainPoint" data-insight-type="problem" data-tooltip="Focus on a significant customer pain point. (Type: Problem)" data-sound-hover="ui_hover_light" tabindex="0">Pain Point Focus</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbFeatureX" data-insight-type="solution" data-tooltip="A core feature of your proposed solution. (Type: Solution)" data-sound-hover="ui_hover_light" tabindex="0">Feature X</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbUniqueAngle" data-insight-type="uvp" data-tooltip="What makes your solution uniquely compelling? (Type: UVP)" data-sound-hover="ui_hover_light" tabindex="0">Unique Angle</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbNetworkEffect" data-insight-type="advantage" data-tooltip="A built-in advantage, like network effects or proprietary tech. (Type: Advantage)" data-sound-hover="ui_hover_light" tabindex="0">Network Effect</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbSocialMedia" data-insight-type="channels" data-tooltip="Leverage social media for outreach. (Type: Channels)" data-sound-hover="ui_hover_light" tabindex="0">Social Media</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbEarlyAdopters" data-insight-type="customer" data-tooltip="Identify and target your early adopters. (Type: Customer)" data-sound-hover="ui_hover_light" tabindex="0">Early Adopters</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbConversionRate" data-insight-type="metrics" data-tooltip="Track conversion rates as a key metric. (Type: Metrics)" data-sound-hover="ui_hover_light" tabindex="0">Conversion Rate</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbCAC" data-insight-type="cost" data-tooltip="Understand your Customer Acquisition Cost. (Type: Cost)" data-sound-hover="ui_hover_light" tabindex="0">Customer Acquisition Cost</div>
+                                    <div class="draggable insight-orb" draggable="true" id="orbSubscription" data-insight-type="revenue" data-tooltip="Implement a subscription-based revenue model. (Type: Revenue)" data-sound-hover="ui_hover_light" tabindex="0">Subscription Model</div>
+                                </div>
+                            </div>
+                            <button id="submitLeanCanvasButton" class="button button-action mt-5" data-sound-click="ui_confirm">Finalize Canvas</button>
+                            <div class="consultant-cta">
+                                <p class="text-purple-300 mb-2">Need strategic clarity? Daniel can help refine your Lean Canvas.</p>
+                                <button id="consultDanielLeanCanvasButton" class="button button-consult" data-sound-click="modal_consult">Consult Daniel (150 TC)</button>
+                            </div>
+                        </article>
+
+                        <article id="missionVisionValuesActivity" class="activity-card hidden" aria-labelledby="mvvActivityTitle">
+                            <div class="activity-header">
+                                <h3 id="mvvActivityTitle" class="activity-title">1.2 Define: Mission, Vision & Values</h3>
+                                <div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Mission, Vision, Values Status"></div>
+                            </div>
+                            <p class="activity-description">Articulate the soul of your company. This is your North Star, guiding your decisions and inspiring your team.</p>
+                            <div id="mvvInputs" class="interactive-area p-4 space-y-4 bg-gray-800 bg-opacity-30 rounded-md">
+                                <div>
+                                    <label for="missionInput" class="block text-sm font-medium text-cyan-300 mb-1">Mission Statement (Your "Why"):</label>
+                                    <textarea id="missionInput" placeholder="What is your company's core purpose? How do you create value?" class="input-field w-full" rows="3"></textarea>
+                                </div>
+                                <div>
+                                    <label for="visionInput" class="block text-sm font-medium text-cyan-300 mb-1">Vision Statement (Your "Where"):</label>
+                                    <textarea id="visionInput" placeholder="What future do you want to create? What is your ultimate aspiration?" class="input-field w-full" rows="3"></textarea>
+                                </div>
+                                <fieldset>
+                                    <legend class="block text-sm font-medium text-cyan-300 mb-1">Core Values (Choose 3-5):</legend>
+                                    <div id="coreValuesSelector" class="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-1">
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valInnovation" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valInnovation" class="text-gray-200 cursor-pointer ml-2">Innovation</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valIntegrity" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valIntegrity" class="text-gray-200 cursor-pointer ml-2">Integrity</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valCustomerCentricity" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valCustomerCentricity" class="text-gray-200 cursor-pointer ml-2">Customer-Centricity</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valSustainability" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valSustainability" class="text-gray-200 cursor-pointer ml-2">Sustainability</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valCollaboration" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valCollaboration" class="text-gray-200 cursor-pointer ml-2">Collaboration</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valExcellence" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valExcellence" class="text-gray-200 cursor-pointer ml-2">Excellence</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valAgility" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valAgility" class="text-gray-200 cursor-pointer ml-2">Agility</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valImpact" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valImpact" class="text-gray-200 cursor-pointer ml-2">Impact</label></div>
+                                        <div class="value-option flex items-center"><input type="checkbox" id="valTransparency" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="valTransparency" class="text-gray-200 cursor-pointer ml-2">Transparency</label></div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <button id="submitMVVButton" class="button button-action mt-5" data-sound-click="ui_confirm">Set Guiding Principles</button>
+                            <div class="consultant-cta">
+                                <p class="text-purple-300 mb-2">Craft resonant Mission, Vision & Values with expert guidance?</p>
+                                <button id="consultDanielMVVButton" class="button button-consult" data-sound-click="modal_consult">Consult Daniel (200 TC)</button>
+                            </div>
+                        </article>
+                        
+                        <article id="validationGameActivity" class="activity-card hidden" aria-labelledby="validationGameActivityTitle">
+                            <div class="activity-header"><h3 id="validationGameActivityTitle" class="activity-title">1.3 Validation Game: Market Pulse</h3><div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Validation Game Status"></div></div>
+                            <p class="activity-description">Interact with simulated customer avatars. Gauge demand for your idea and refine your pitch based on their feedback. (Simplified for now - click to complete)</p>
+                            <div id="customerAvatarsContainer" class="interactive-area p-4 min-h-[250px] bg-gray-800 bg-opacity-30 rounded-md space-y-4">
+                                <div class="avatar-interaction p-4 bg-gray-700 bg-opacity-60 rounded-lg shadow-md">
+                                    <div class="flex items-start space-x-3">
+                                        <img src="https://placehold.co/40x40/7F5AF0/FFFFFF?text=A1&font=orbitron" alt="Avatar Alex, a potential early adopter" class="w-10 h-10 rounded-full border-2 border-purple-400" onerror="this.onerror=null; this.src='https://placehold.co/40x40/cccccc/333333?text=Err&font=sans';">
+                                        <div>
+                                            <p class="font-semibold text-cyan-300">Avatar Alex (Potential Early Adopter)</p>
+                                            <p class="text-sm text-gray-300 mt-1">"Your concept for <span class="text-yellow-300">[Idea Snippet From Onboarding]</span> sounds intriguing. But how will it specifically solve my problem of <span class="text-orange-300">[Simulated Pain Point]</span>? And what's the estimated cost?"</p>
+                                        </div>
+                                    </div>
+                                    <div class="mt-3 pl-12">
+                                        <label for="responseToAlex" class="sr-only">Response to Avatar Alex</label>
+                                        <textarea id="responseToAlex" placeholder="Craft your response to Alex... (This is a visual placeholder)" class="input-field w-full text-sm" rows="2" disabled></textarea>
+                                        <button class="button button-secondary text-xs mt-2" data-sound-click="ui_click_subtle" disabled>Send Response (Disabled)</button>
+                                    </div>
+                                </div>
+                                <p class="text-center text-gray-400 italic mt-4">Full interactive validation game coming soon!</p>
+                            </div>
+                            <button id="completeValidationGameButton" class="button button-action mt-5" data-sound-click="ui_confirm">Conclude Validation (Simulated)</button>
+                        </article>
+
+                        <div class="phase-completion-area mt-8 p-6 bg-gray-800 rounded-lg shadow-xl border border-blue-500 border-opacity-30">
+                            <div class="progress-bar-container my-2">
+                                <div class="progress-bar-label text-lg" id="ideateClarityScoreLabel">Clarity Score: <span id="ideatePhaseClarityScore" class="font-bold text-green-400">0%</span> (Min. 30% to proceed)</div>
+                                <div class="progress-bar-bg h-5" role="progressbar" aria-labelledby="ideateClarityScoreLabel" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div id="ideateClarityProgressBar" class="progress-bar-fill bg-green-500 h-full" style="width: 0%;"></div></div>
+                            </div>
+                            <button id="completeIdeatePhaseButton" class="button button-primary button-phase-complete text-lg py-3 w-full mt-4" data-sound-click="ui_phase_complete">Validate & Proceed to BUILD</button>
+                        </div>
+                    </section>
+
+                    <section id="buildPhase" class="game-phase hidden" aria-labelledby="buildPhaseTitle">
+                        <h2 id="buildPhaseTitle" class="phase-title">Phase 2: BUILD - Construct Your Enterprise <span id="buildPhaseProgress" class="phase-progress" aria-live="polite"></span></h2>
+                        
+                        <article id="brandingActivity" class="activity-card" aria-labelledby="brandingActivityTitle">
+                            <div class="activity-header"><h3 id="brandingActivityTitle" class="activity-title">2.1 Branding Suite</h3><div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Branding Suite Status"></div></div>
+                            <p class="activity-description">Define your visual and verbal identity. This is how TekVille will see you. Select a logo style, craft a tagline, choose brand colors, typography, and key product features.</p>
+                            <div class="grid md:grid-cols-2 gap-x-6 gap-y-4 mt-4">
+                                <fieldset id="logoDesignArea" class="interactive-sub-card p-5">
+                                    <legend class="sub-activity-title">Logo Archetype</legend>
+                                    <div class="flex flex-wrap gap-2 my-3" role="radiogroup" aria-label="Logo Archetype Choices">
+                                        <button class="logo-choice-btn button button-tertiary" data-logo-style="Modern" data-sound-hover="ui_hover_light" data-tooltip="Sleek, innovative, forward-thinking" role="radio" aria-checked="false">Modern</button>
+                                        <button class="logo-choice-btn button button-tertiary" data-logo-style="Classic" data-sound-hover="ui_hover_light" data-tooltip="Timeless, trustworthy, established" role="radio" aria-checked="false">Classic</button>
+                                        <button class="logo-choice-btn button button-tertiary" data-logo-style="Playful" data-sound-hover="ui_hover_light" data-tooltip="Fun, friendly, approachable" role="radio" aria-checked="false">Playful</button>
+                                        <button class="logo-choice-btn button button-tertiary" data-logo-style="Minimalist" data-sound-hover="ui_hover_light" data-tooltip="Simple, clean, elegant" role="radio" aria-checked="false">Minimalist</button>
+                                    </div>
+                                    <div class="mt-3 p-3 bg-gray-700 bg-opacity-40 rounded-md text-center min-h-[60px] flex items-center justify-center">
+                                        <p class="text-sm">Selected Style: <span id="selectedLogoDisplay" class="font-semibold text-purple-300 text-lg" aria-live="polite">None</span></p>
+                                    </div>
+                                </fieldset>
+                                <div id="taglineCreatorArea" class="interactive-sub-card p-5">
+                                    <h4 class="sub-activity-title" id="taglineLabel">Tagline</h4>
+                                    <input type="text" id="taglineInput" placeholder="Your Memorable Tagline..." class="input-field w-full mt-3" aria-labelledby="taglineLabel">
+                                    <p class="text-xs text-gray-400 mt-1">Keep it short, catchy, and value-driven.</p>
+                                </div>
+                                <fieldset id="brandColorPaletteArea" class="interactive-sub-card p-5">
+                                    <legend class="sub-activity-title">Brand Color Palette</legend>
+                                    <p class="text-xs text-gray-400 mb-3">Define your visual identity.</p>
+                                    <div class="flex flex-col space-y-3">
+                                        <div class="flex items-center justify-between">
+                                            <label for="primaryColorPicker" class="text-sm text-cyan-300">Primary Color:</label>
+                                            <div class="flex items-center">
+                                                <input type="color" id="primaryColorPicker" name="primaryColor" value="#4A90E2" class="input-color-picker" data-sound-change="ui_color_pick" aria-label="Primary Brand Color">
+                                                <span id="primaryColorValue" class="ml-2 text-xs w-16 text-right" aria-live="polite">#4A90E2</span>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center justify-between">
+                                            <label for="secondaryColorPicker" class="text-sm text-cyan-300">Secondary Color:</label>
+                                            <div class="flex items-center">
+                                                <input type="color" id="secondaryColorPicker" name="secondaryColor" value="#FFC107" class="input-color-picker" data-sound-change="ui_color_pick" aria-label="Secondary Brand Color">
+                                                <span id="secondaryColorValue" class="ml-2 text-xs w-16 text-right" aria-live="polite">#FFC107</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                                <div id="brandTypographyArea" class="interactive-sub-card p-5">
+                                    <label for="fontStyleSelect" class="sub-activity-title block">Brand Typography</label>
+                                    <p class="text-xs text-gray-400 mb-3">Choose a font style that reflects your brand's personality.</p>
+                                    <select id="fontStyleSelect" class="input-field w-full" data-sound-change="ui_select">
+                                        <option value="sans-serif-modern">Modern & Clean (e.g., Inter, Roboto)</option>
+                                        <option value="serif-classic">Classic & Elegant (e.g., Georgia, Merriweather)</option>
+                                        <option value="display-bold">Bold & Impactful (e.g., Orbitron, Bebas Neue)</option>
+                                        <option value="script-personal">Personal & Friendly (e.g., Pacifico, Lobster)</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <fieldset id="productFeaturesArea" class="interactive-sub-card mt-6 p-5">
+                                <legend class="sub-activity-title">Key Product Features (Select 3-5)</legend>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3 mt-3">
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature1" value="AI Powered" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature1" class="ml-2 cursor-pointer">AI Powered</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature2" value="Mobile First" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature2" class="ml-2 cursor-pointer">Mobile First</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature3" value="Analytics Suite" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature3" class="ml-2 cursor-pointer">Analytics Suite</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature4" value="Collaboration Tools" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature4" class="ml-2 cursor-pointer">Collaboration Tools</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature5" value="Eco-Friendly" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature5" class="ml-2 cursor-pointer">Eco-Friendly</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature6" value="Subscription Model" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature6" class="ml-2 cursor-pointer">Subscription Model</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature7" value="Gamification" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature7" class="ml-2 cursor-pointer">Gamification</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature8" value="Personalization" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature8" class="ml-2 cursor-pointer">Personalization</label></div>
+                                    <div class="feature-option flex items-center"><input type="checkbox" id="feature9" value="Marketplace" class="styled-checkbox" data-sound-click="ui_checkbox"><label for="feature9" class="ml-2 cursor-pointer">Marketplace</label></div>
+                                </div>
+                            </fieldset>
+                            <button id="submitBrandingButton" class="button button-action mt-6" data-sound-click="ui_confirm">Finalize Branding Suite</button>
+                            <div class="consultant-cta">
+                                <p class="text-purple-300 mb-2">Want a world-class brand identity? Daniel can help.</p>
+                                <button id="consultDanielBrandingButton" class="button button-consult" data-sound-click="modal_consult">Consult Daniel (300 TC)</button>
+                            </div>
+                        </article>
+                        
+                        <article id="teamAssignmentActivity" class="activity-card hidden" aria-labelledby="teamAssignmentActivityTitle">
+                            <div class="activity-header">
+                                <h3 id="teamAssignmentActivityTitle" class="activity-title">2.2 Assemble Core Team</h3>
+                                <div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Team Assignment Status"></div>
+                            </div>
+                            <p class="activity-description">Drag and drop TekVille's finest talents into key leadership roles. Consider their skills for optimal team synergy. You must fill CEO, CTO, and CMO roles.</p>
+                            <div id="teamRolesDropArea" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 interactive-area p-4" aria-label="Team Role Assignment Slots">
+                                <div class="role-slot" data-role="CEO" aria-labelledby="ceoRoleLabel"><h4 id="ceoRoleLabel" class="role-label">CEO</h4><div class="assigned-character mt-2 text-gray-500 italic placeholder-content" aria-live="polite">(Vacant)</div><div class="skill-match-indicator mt-1 text-xs" aria-live="polite"></div></div>
+                                <div class="role-slot" data-role="CTO" aria-labelledby="ctoRoleLabel"><h4 id="ctoRoleLabel" class="role-label">CTO</h4><div class="assigned-character mt-2 text-gray-500 italic placeholder-content" aria-live="polite">(Vacant)</div><div class="skill-match-indicator mt-1 text-xs" aria-live="polite"></div></div>
+                                <div class="role-slot" data-role="CMO" aria-labelledby="cmoRoleLabel"><h4 id="cmoRoleLabel" class="role-label">CMO</h4><div class="assigned-character mt-2 text-gray-500 italic placeholder-content" aria-live="polite">(Vacant)</div><div class="skill-match-indicator mt-1 text-xs" aria-live="polite"></div></div>
+                                <div class="role-slot" data-role="COO" aria-labelledby="cooRoleLabel"><h4 id="cooRoleLabel" class="role-label">COO (Optional)</h4><div class="assigned-character mt-2 text-gray-500 italic placeholder-content" aria-live="polite">(Vacant)</div><div class="skill-match-indicator mt-1 text-xs" aria-live="polite"></div></div>
+                            </div>
+                            <div id="characterPool" class="mt-6 p-4 bg-gray-800 bg-opacity-60 rounded-md">
+                                <h4 class="sub-activity-title text-cyan-300 mb-3">Available Talent Pool:</h4>
+                                <div class="flex flex-wrap gap-3 justify-center" aria-label="Available Characters for Team Roles">
+                                    <div class="character-card" draggable="true" data-character-id="charAlice" data-tooltip="Alice Chen: Leadership, Strategy, Finance. Ideal CEO." data-sound-hover="ui_hover_light" tabindex="0">Alice Chen</div>
+                                    <div class="character-card" draggable="true" data-character-id="charBob" data-tooltip="Bob 'Cypher' Kumar: Tech, Innovation, Development. Perfect CTO." data-sound-hover="ui_hover_light" tabindex="0">Bob 'Cypher' Kumar</div>
+                                    <div class="character-card" draggable="true" data-character-id="charCarol" data-tooltip="Carol Maxwell: Marketing, Sales, Communication. Excellent CMO." data-sound-hover="ui_hover_light" tabindex="0">Carol Maxwell</div>
+                                    <div class="character-card" draggable="true" data-character-id="charDave" data-tooltip="Dave Miller: Operations, Logistics, HR. Versatile COO." data-sound-hover="ui_hover_light" tabindex="0">Dave Miller</div>
+                                    <div class="character-card" draggable="true" data-character-id="charEve" data-tooltip="Eve Solaris: Design, UX, Branding. Ideal Chief Design Officer." data-sound-hover="ui_hover_light" tabindex="0">Eve Solaris</div>
+                                </div>
+                            </div>
+                            <button id="submitTeamButton" class="button button-action mt-5" data-sound-click="ui_confirm">Confirm Team</button>
+                            <div class="consultant-cta">
+                                <p class="text-purple-300 mb-2">Optimize team synergy with Daniel's expert analysis.</p>
+                                <button id="consultDanielTeamButton" class="button button-consult" data-sound-click="modal_consult">Consult Daniel (250 TC)</button>
+                            </div>
+                        </article>
+
+                        <article id="workflowActivity" class="activity-card hidden" aria-labelledby="workflowActivityTitle"> 
+                            <div class="activity-header"><h3 id="workflowActivityTitle" class="activity-title">2.3 Define Core Workflow (Placeholder)</h3><div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Core Workflow Status"></div></div>
+                            <p class="activity-description">Map out the key steps in your product/service delivery. (This activity is under construction. Click to simulate completion.)</p>
+                            <button id="completeWorkflowButton" class="button button-action mt-5" data-sound-click="ui_confirm">Simulate Workflow Definition</button>
+                        </article>
+                        <article id="offerPageActivity" class="activity-card hidden" aria-labelledby="offerPageActivityTitle"> 
+                            <div class="activity-header"><h3 id="offerPageActivityTitle" class="activity-title">2.4 Draft Offer Page (Placeholder)</h3><div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Offer Page Status"></div></div>
+                            <p class="activity-description">Create a compelling landing page for your core offering. (This activity is under construction. Click to simulate completion.)</p>
+                            <button id="completeOfferPageButton" class="button button-action mt-5" data-sound-click="ui_confirm">Simulate Offer Page Draft</button>
+                        </article>
+
+                        <div class="phase-completion-area mt-8 p-6 bg-gray-800 rounded-lg shadow-xl border border-blue-500 border-opacity-30">
+                            <div class="progress-bar-container my-2">
+                                <div class="progress-bar-label text-lg" id="buildStructureScoreLabel">Structure Score: <span id="buildPhaseStructureScore" class="font-bold text-green-400">0%</span> (Min. 25% to proceed)</div>
+                                <div class="progress-bar-bg h-5" role="progressbar" aria-labelledby="buildStructureScoreLabel" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div id="buildStructureProgressBar" class="progress-bar-fill bg-green-500 h-full" style="width: 0%;"></div></div>
+                            </div>
+                            <button id="completeBuildPhaseButton" class="button button-primary button-phase-complete text-lg py-3 w-full mt-4" data-sound-click="ui_phase_complete">Solidify Structure & OPERATE</button>
+                        </div>
+                    </section>
+
+                    <section id="operatePhase" class="game-phase hidden" aria-labelledby="operatePhaseTitle">
+                        <h2 id="operatePhaseTitle" class="phase-title">Phase 3: OPERATE - Manage & Optimize <span id="operatePhaseProgress" class="phase-progress" aria-live="polite"></span></h2>
+                        <article id="dailyOpsActivity" class="activity-card" aria-labelledby="dailyOpsActivityTitle"> 
+                            <div class="activity-header"><h3 id="dailyOpsActivityTitle" class="activity-title">3.1 Daily Operations (Placeholder)</h3><div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Daily Operations Status"></div></div>
+                            <p class="activity-description">Manage day-to-day tasks, respond to market changes, and keep your team motivated. (This phase is under construction. Click to simulate completion.)</p>
+                            <button id="simulateOperateButton" class="button button-action mt-5" data-sound-click="ui_confirm">Simulate Operations Cycle</button>
+                        </article>
+                        <div class="phase-completion-area mt-8 p-6 bg-gray-800 rounded-lg shadow-xl border border-blue-500 border-opacity-30">
+                            <div class="progress-bar-container my-2">
+                                <div class="progress-bar-label text-lg" id="operateOpsScoreLabel">Execution Power: <span id="operatePhaseOpsScore" class="font-bold text-green-400">0%</span> (Min. 25% to proceed)</div>
+                                <div class="progress-bar-bg h-5" role="progressbar" aria-labelledby="operateOpsScoreLabel" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div id="operateExecutionProgressBar" class="progress-bar-fill bg-green-500 h-full" style="width: 0%;"></div></div>
+                            </div>
+                            <button id="completeOperatePhaseButton" class="button button-primary button-phase-complete text-lg py-3 w-full mt-4" data-sound-click="ui_phase_complete">Optimize Operations & GROW</button>
+                        </div>
+                    </section>
+
+                    <section id="growPhase" class="game-phase hidden" aria-labelledby="growPhaseTitle">
+                        <h2 id="growPhaseTitle" class="phase-title">Phase 4: GROW - Scale & Conquer <span id="growPhaseProgress" class="phase-progress" aria-live="polite"></span></h2>
+                        <article id="marketExpansionActivity" class="activity-card" aria-labelledby="marketExpansionActivityTitle"> 
+                            <div class="activity-header"><h3 id="marketExpansionActivityTitle" class="activity-title">4.1 Market Expansion (Placeholder)</h3><div class="activity-status-icon" data-completed="false" role="status" aria-live="polite" aria-label="Market Expansion Status"></div></div>
+                            <p class="activity-description">Launch marketing campaigns, explore new markets, and scale your operations. (This phase is under construction. Click to simulate completion.)</p>
+                            <button id="simulateGrowButton" class="button button-action mt-5" data-sound-click="ui_confirm">Simulate Growth Initiatives</button>
+                        </article>
+                        <div class="phase-completion-area mt-8 p-6 bg-gray-800 rounded-lg shadow-xl border border-blue-500 border-opacity-30">
+                            <div class="progress-bar-container my-2">
+                                <div class="progress-bar-label text-lg" id="growMarketScoreLabel">Market Reception: <span id="growPhaseMarketScore" class="font-bold text-green-400">0%</span> (Min. 25% to Launch)</div>
+                                <div class="progress-bar-bg h-5" role="progressbar" aria-labelledby="growMarketScoreLabel" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"><div id="growMarketProgressBar" class="progress-bar-fill bg-green-500 h-full" style="width: 0%;"></div></div>
+                            </div>
+                            <button id="completeGrowPhaseButton" class="button button-primary button-phase-complete text-lg py-3 w-full mt-4" data-sound-click="ui_phase_complete">Achieve Scale & LAUNCH!</button>
+                        </div>
+                    </section>
+
+                    <section id="endgameSection" class="game-phase hidden" aria-labelledby="endgameTitle">
+                        <h2 id="endgameTitle" class="phase-title text-green-300">LAUNCHED! [Company Name]</h2>
+                        <div class="text-center p-8 bg-gray-800 bg-opacity-60 rounded-lg shadow-xl border-2 border-green-500">
+                            <div class="text-6xl mb-6 animate-bounce" aria-hidden="true">🚀</div>
+                            <p class="text-3xl text-yellow-400 mb-4 font-orbitron">Founder's Quest Completed!</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-lg text-gray-200 mb-6 max-w-lg mx-auto bg-black bg-opacity-30 p-4 rounded-md">
+                                <div>Clarity Score: <span class="font-bold text-cyan-300">[Clarity]%</span></div>
+                                <div>Structure Score: <span class="font-bold text-cyan-300">[Structure]%</span></div>
+                                <div>Execution Power: <span class="font-bold text-cyan-300">[Execution]%</span></div>
+                                <div>Market Reception: <span class="font-bold text-cyan-300">[Market]%</span></div>
+                                <div class="md:col-span-2 text-xl mt-2">Total Impact: <span class="font-bold text-green-400">[Total]</span> / 400</div>
+                            </div>
+                            <p class="text-xl text-gray-100 mb-2">Final TekCoins: <span class="font-bold text-yellow-300">[TekCoins]</span></p>
+                            <p class="text-xl text-gray-100 mb-8">Achievements Unlocked: <span class="font-bold text-purple-300">[AchievementsCount]</span></p>
+                            <button id="restartGameFromEndButton" class="button button-primary mt-8 text-xl py-3 px-6">Play Again & Build a New Legacy</button>
+                        </div>
+                    </section>
+                </div> 
+            </main>
+
+            <footer id="gameFooter" class="p-3 md:p-4 border-t-2 border-blue-400 border-opacity-30 text-center bg-black bg-opacity-50 flex-shrink-0">
+                <div id="tekvilleMarketPulse" class="text-xs text-cyan-400 overflow-hidden h-5 relative" aria-label="TekVille Market News Ticker">
+                    <div class="pulse-ticker absolute whitespace-nowrap">
+                        <span>Founder's Quest News: AI startups see record funding... </span>
+                        <span>New iBOG™ framework update announced by HeyTek Limited... </span>
+                        <span>User engagement in simulation games hits all-time high... </span>
+                        <span>TekerBot AI receives "Mentor of the Year" nomination... </span>
+                        <span>Local venture "PixelPerfect Designs" successfully launches using Founder's Quest principles... </span>
+                    </div>
+                </div>
+                <p class="text-xs text-gray-600 mt-1">&copy; <span id="currentYear"></span> Founder's Quest™ by HeyTek Limited. Game Engine v3.0.0. iBOG™ Framework by Daniel Innocent.</p>
+            </footer>
+        </div> 
+        
+        <div id="toastNotificationArea" class="fixed top-5 right-5 z-[10001] w-full max-w-xs sm:max-w-sm pointer-events-none flex flex-col space-y-3" aria-live="assertive" aria-atomic="true">
+            </div>
+
+        <div id="unlockablesModal" class="modal hidden" data-sound-open="modal_achievement" role="dialog" aria-modal="true" aria-labelledby="unlockableModalTitle">
+            <div class="modal-content max-w-md glassmorphic-panel">
+                <div class="modal-header">
+                    <h2 id="unlockableModalTitle" class="text-2xl font-orbitron text-green-300">Achievement Unlocked!</h2>
+                    <button class="modal-close-btn" data-sound-click="ui_close" aria-label="Close Achievement Modal">&times;</button>
+                </div>
+                <div id="unlockableContent" class="modal-body-content text-center">
+                    <div class="text-6xl mb-3 animate-bounce" aria-hidden="true">🏆</div> 
+                    <div id="unlockableMessage" class="text-lg text-gray-200">[Details of unlocked content or easter egg]</div>
+                </div>
+                <div class="modal-footer">
+                    <button class="button button-primary closeModalButton w-full" data-sound-click="ui_confirm_major">Claim Reward!</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="settingsModal" class="modal hidden" data-sound-open="modal_settings" role="dialog" aria-modal="true" aria-labelledby="settingsModalTitle">
+            <div class="modal-content max-w-lg glassmorphic-panel">
+                <div class="modal-header">
+                    <h2 id="settingsModalTitle" class="text-2xl font-orbitron text-cyan-300">Game Settings</h2>
+                    <button class="modal-close-btn" data-sound-click="ui_close" aria-label="Close Settings Modal">&times;</button>
+                </div>
+                <div class="modal-body-content space-y-4">
+                    <div>
+                        <label for="soundVolume" class="block text-sm font-medium text-gray-300">Sound Volume:</label>
+                        <input type="range" id="soundVolume" min="0" max="1" step="0.05" value="0.5" class="w-full styled-range mt-1" data-sound-change="ui_slider" aria-label="Sound Volume Control">
+                    </div>
+                    <div>
+                        <label for="musicVolume" class="block text-sm font-medium text-gray-300">Music Volume:</label>
+                        <input type="range" id="musicVolume" min="0" max="1" step="0.05" value="0.3" class="w-full styled-range mt-1" data-sound-change="ui_slider" aria-label="Music Volume Control">
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="tutorialToggle" class="styled-checkbox" checked data-sound-click="ui_checkbox">
+                        <label for="tutorialToggle" class="text-sm text-gray-300 ml-2 cursor-pointer">Show Tutorial Tips (TekerBot)</label>
+                    </div>
+                    <div class="flex items-center">
+                        <input type="checkbox" id="animationsToggle" class="styled-checkbox" checked data-sound-click="ui_checkbox">
+                        <label for="animationsToggle" class="text-sm text-gray-300 ml-2 cursor-pointer">Enable UI Animations</label>
+                    </div>
+                </div>
+                <div class="modal-footer justify-between items-center">
+                    <button id="resetGameProgressButton" class="button button-danger text-xs py-2 px-3" data-sound-click="ui_warning">Reset All Progress</button>
+                    <button id="saveSettingsButton" class="button button-primary closeModalButton" data-sound-click="ui_confirm">Apply & Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="achievementsModal" class="modal hidden" data-sound-open="modal_achievements_log" role="dialog" aria-modal="true" aria-labelledby="achievementsModalTitle">
+            <div class="modal-content max-w-lg glassmorphic-panel">
+                <div class="modal-header">
+                    <h2 id="achievementsModalTitle" class="text-2xl font-orbitron text-yellow-300">Achievements Log</h2>
+                    <button class="modal-close-btn" data-sound-click="ui_close" aria-label="Close Achievements Log Modal">&times;</button>
+                </div>
+                <div id="achievementsList" class="modal-body-content space-y-3 max-h-80 overflow-y-auto custom-scrollbar pr-2">
+                    <p class="text-gray-400 italic">No achievements unlocked yet. Keep playing!</p>
+                </div>
+                <div class="modal-footer">
+                    <button class="button button-primary closeModalButton" data-sound-click="ui_confirm">Close</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="confirmationModal" class="modal hidden" data-sound-open="modal_warning" role="alertdialog" aria-modal="true" aria-labelledby="confirmationModalTitle" aria-describedby="confirmationModalMessage">
+            <div class="modal-content max-w-md glassmorphic-panel">
+                <div class="modal-header">
+                    <h2 id="confirmationModalTitle" class="text-2xl font-orbitron text-yellow-300">Confirm Action</h2>
+                    <button class="modal-close-btn" data-sound-click="ui_cancel" aria-label="Cancel Action">&times;</button>
+                </div>
+                <div class="modal-body-content">
+                    <p id="confirmationModalMessage" class="text-gray-200 text-lg">Are you sure you want to proceed?</p>
+                </div>
+                <div class="modal-footer justify-end space-x-3">
+                    <button id="confirmationModalCancelButton" class="button button-muted" data-sound-click="ui_cancel">Cancel</button>
+                    <button id="confirmationModalConfirmButton" class="button button-danger" data-sound-click="ui_warning_confirm">Confirm</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="tekerBotChatModal" class="modal hidden" data-sound-open="modal_open" role="dialog" aria-modal="true" aria-labelledby="tekerBotChatModalTitle">
+            <div class="modal-content max-w-xl w-full glassmorphic-panel flex flex-col h-[80vh] md:h-[70vh]">
+                <div class="modal-header">
+                    <h2 id="tekerBotChatModalTitle" class="text-2xl font-orbitron text-cyan-300 flex items-center">
+                        <svg class="w-7 h-7 mr-3 text-cyan-400 icon" fill="currentColor" viewBox="0 0 20 20" role="img" aria-label="AI Mentor Icon"><title>AI Mentor Icon</title><path d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"></path></svg>
+                        Chat with TekerBot
+                    </h2>
+                    <button class="modal-close-btn" data-sound-click="ui_close" aria-label="Close TekerBot Chat Modal">&times;</button>
+                </div>
+                <div id="tekerBotChatMessages" class="modal-body-content flex-grow p-4 space-y-3 overflow-y-auto custom-scrollbar">
+                    <div class="chat-message bo-message"> <p class="font-semibold text-cyan-300">TekerBot</p>
+                        <div class="message-bubble bg-gray-700">Ask me anything about your current phase, or for general startup advice! (Chatting costs 5 TC per message)</div>
+                    </div>
+                </div>
+                <div class="modal-footer p-3 border-t border-gray-700">
+                    <div class="flex w-full items-center space-x-2">
+                        <label for="tekerBotChatInput" class="sr-only">Your message to TekerBot</label>
+                        <input type="text" id="tekerBotChatInput" placeholder="Type your message to TekerBot..." class="input-field flex-grow">
+                        <button id="sendTekerBotChatMessageButton" class="button button-primary py-2 px-4" data-sound-click="ui_confirm">
+                            <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg"><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009 16.51l.225.45A1 1 0 0011 17.509V10.5a1 1 0 00-1.106-.998zM10.5 5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path><path d="M10.894 2.553a1 1 0 00-1.788 0l-7 14a1 1 0 001.169 1.409l5-1.428A1 1 0 009 16.51l.225.45A1 1 0 0011 17.509V10.5a1 1 0 00-1.106-.998zM10.5 5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path></svg>
+                            <span class="ml-1">Send</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div> 
+    <script src="script.js" defer></script>
+</body>
+</html>
